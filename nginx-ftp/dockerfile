@@ -1,18 +1,20 @@
 FROM alpine
 
 ENV ADMIN_USER='admin'
-ENV ADMIN_PASSWORD='123456##**' 
+ARG ADMIN_PASSWORD
 
 # 将数据文件复制到容器中的/initdata目录
 COPY data/ /initdata
 COPY *.sh /
 
 RUN \
+    # 替换为国内镜像源
     # 安装必要的软件包
     apk update && \
     apk add --no-cache bash nginx vsftpd openssh inotify-tools && \
     # 创建 FTP 用户并设置密码
-    adduser -D -h /data -s /bin/bash $ADMIN_USER && \
+    addgroup $ADMIN_USER && \
+    adduser -D -h /data -s /bin/bash -G $ADMIN_USER $ADMIN_USER && \
     echo "$ADMIN_USER:$ADMIN_PASSWORD" | chpasswd && \
     # 配置SSH
     ssh-keygen -A && \
